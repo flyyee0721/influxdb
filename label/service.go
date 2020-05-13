@@ -196,7 +196,7 @@ func (s *Service) DeleteLabel(ctx context.Context, id influxdb.ID) error {
 	return nil
 }
 
-// LabelMappings
+//******* Label Mappings *******//
 
 // CreateLabelMapping creates a new mapping between a resource and a label.
 func (s *Service) CreateLabelMapping(ctx context.Context, m *influxdb.LabelMapping) error {
@@ -228,16 +228,18 @@ func (s *Service) CreateLabelMapping(ctx context.Context, m *influxdb.LabelMappi
 
 // DeleteLabelMapping deletes a label mapping.
 func (s *Service) DeleteLabelMapping(ctx context.Context, m *influxdb.LabelMapping) error {
-	// err := s.kv.Update(ctx, func(tx Tx) error {
-	// 	return s.deleteLabelMapping(ctx, tx, m)
-	// })
-	// if err != nil {
-	// 	return &influxdb.Error{
-	// 		Err: err,
-	// 	}
-	// }
+	err := s.store.Update(ctx, func(tx kv.Tx) error {
+		return s.store.DeleteLabelMapping(ctx, tx, m)
+	})
+	if err != nil {
+		return &influxdb.Error{
+			Err: err,
+		}
+	}
 	return nil
 }
+
+//******* helper functions *******//
 
 func unique(ctx context.Context, tx kv.Tx, indexBucket, indexKey []byte) error {
 	bucket, err := tx.Bucket(indexBucket)

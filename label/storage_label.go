@@ -294,6 +294,24 @@ func (s *Store) FindResourceLabels(ctx context.Context, tx kv.Tx, filter influxd
 }
 
 func (s *Store) DeleteLabelMapping(ctx context.Context, tx kv.Tx, m *influxdb.LabelMapping) error {
+	key, err := labelMappingKey(m)
+	if err != nil {
+		return &influxdb.Error{
+			Err: err,
+		}
+	}
+
+	idx, err := tx.Bucket(labelMappingBucket)
+	if err != nil {
+		return err
+	}
+
+	if err := idx.Delete(key); err != nil {
+		return &influxdb.Error{
+			Err: err,
+		}
+	}
+
 	return nil
 }
 

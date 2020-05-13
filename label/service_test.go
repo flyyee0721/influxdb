@@ -60,30 +60,25 @@ func initBoltLabelService(f influxdbtesting.LabelFields, t *testing.T) (influxdb
 
 func initLabelService(s *label.Store, f influxdbtesting.LabelFields, t *testing.T) (influxdb.LabelService, string, func()) {
 	svc := label.NewService(s)
-
 	ctx := context.Background()
-	// if err := svc.Initialize(ctx); err != nil {
-	// 	t.Fatalf("error initializing label service: %v", err)
-	// }
+
 	for _, l := range f.Labels {
 		if err := svc.CreateLabel(ctx, l); err != nil {
 			t.Fatalf("failed to populate labels: %v", err)
 		}
 	}
 
-	// for _, m := range f.Mappings {
-	// 	if err := svc.PutLabelMapping(ctx, m); err != nil {
-	// 		t.Fatalf("failed to populate label mappings: %v", err)
-	// 	}
-	// }
+	for _, m := range f.Mappings {
+		if err := svc.CreateLabelMapping(ctx, m); err != nil {
+			t.Fatalf("failed to populate label mappings: %v", err)
+		}
+	}
 
-	// return svc, kv.OpPrefix, func() {
-	// 	for _, l := range f.Labels {
-	// 		if err := svc.DeleteLabel(ctx, l.ID); err != nil {
-	// 			t.Logf("failed to remove label: %v", err)
-	// 		}
-	// 	}
-	// }
-
-	return svc, kv.OpPrefix, func() {}
+	return svc, kv.OpPrefix, func() {
+		for _, l := range f.Labels {
+			if err := svc.DeleteLabel(ctx, l.ID); err != nil {
+				t.Logf("failed to remove label: %v", err)
+			}
+		}
+	}
 }
